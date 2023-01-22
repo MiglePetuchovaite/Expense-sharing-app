@@ -1,5 +1,23 @@
 {% extends "base.html" %} {% block content %}
-
 <h3>Group's bills</h3>
-
+{% for i in data %}
+<p>ID: {{i.id}}</p>
+<p>Description: {{i.description}}</p>
+<p>Amount, eur: {{i.amount}}</p>
+<hr />
+{% endfor %}
+<h3>Add bill</h3>
+<form method="post" action="#">
+  {{ form.hidden_tag() }}
+  <div class="form-group">
+    {{ form.amount.label(class="form-control-label") }} {{
+    form.amount(class="form-control") }}
+  </div>
+  <div class="form-group">
+    {{ form.description.label(class="form-control-label") }} {{
+    form.description(class="form-control") }}
+  </div>
+  <br />
+  {{ form.submit }}
+</form>
 {% endblock %}

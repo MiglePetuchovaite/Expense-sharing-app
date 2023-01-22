@@ -1,4 +1,21 @@
 {% extends "base.html" %} {% block content %}
-
 <h3>Select Your Group</h3>
+<br />
+{% for group in data %}
+<h3>ID: {{ group.group_id }}</h3>
+<p>{{ group.name }}</p>
+<hr />
+{% endfor %}
+<br />
+<h3>Add group</h3>
+<form action="/groups" method="POST">
+  {{ form.hidden_tag() }}
+
+  <div class="form-select">
+    {{ form.group_id.label(class="form-label") }} {{
+    form.group_id(class="form-select-label") }}
+  </div>
+  {{form.submit}}
+</form>
+
 {% endblock %}
