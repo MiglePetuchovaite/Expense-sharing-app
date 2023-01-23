@@ -30,15 +30,9 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
           <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/">Home</a>
-            </li>
             {% if current_user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="/groups">Groups</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/bills">Bills</a>
+              <a class="nav-link" href="/">Groups</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/logout">Logout</a>

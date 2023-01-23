@@ -1,9 +1,10 @@
 {% extends "base.html" %} {% block content %}
 <h3>Group's bills</h3>
-{% for i in data %}
-<p>ID: {{i.id}}</p>
-<p>Description: {{i.description}}</p>
-<p>Amount, eur: {{i.amount}}</p>
+<br />
+{% for bill in bills %}
+<p>ID: {{bill.id}}</p>
+<p>Description: {{bill.description}}</p>
+<p>Amount, Eur: {{bill.amount}}</p>
 <hr />
 {% endfor %}
 <h3>Add bill</h3>

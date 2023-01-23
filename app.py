@@ -31,7 +31,7 @@ class User(db.Model, UserMixin):
     name = db.Column("Full Name", db.String(20), unique=True, nullable=False)
     email = db.Column("Email", db.String(120), unique=True, nullable=False)
     password = db.Column("Password", db.String(60), unique=True, nullable=False)
-    groups = db.relationship('Group', secondary=groups_users)
+    groups = db.relationship('Group', secondary=groups_users, back_populates="users")
 
 
 class Group(db.Model):
@@ -39,7 +39,8 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column("Group ID", db.String(20), nullable=False)
     name = db.Column("Name", db.String(20), nullable=False)
-    users = db.relationship('User', secondary=groups_users)
+    users = db.relationship('User', secondary=groups_users, back_populates="groups")
+    bills = db.relationship('Bill')
 
     def __init__(self, group_id, name ):
         self.group_id = group_id
@@ -53,6 +54,8 @@ class Bill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column("Amount", db.Integer)
     description = db.Column("Description", db.String(220), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey("groups.id"))
+    group = db.relationship("Group", back_populates="bills")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -64,7 +67,7 @@ def load_user(user_id):
 def register():
     db.create_all()
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     form = forms.RegisterForm()
     if form.validate_on_submit():
         coded_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -79,14 +82,14 @@ def register():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('add_group'))
     form = forms.LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            return redirect(next_page) if next_page else redirect(url_for('register'))
         else:
             flash('Failed to sign in. Check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -95,10 +98,10 @@ def login():
 @app.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 
-@app.route('/groups', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 @login_required
 def add_group():
     data = current_user.groups
@@ -115,25 +118,19 @@ def add_group():
     return render_template('groups.html', form=forma, data=data)
 
 
-@app.route('/bills', methods=['GET', 'POST'])
+@app.route('/bills/<int:group_id>', methods=['GET', 'POST'])
 @login_required
-def bills():
-    db.create_all()
-    data = Bill.query.all()
+def bills(group_id):
+    bills = Bill.query.filter(Bill.group_id==group_id)
     forma = forms.BillForm()
     if forma.validate_on_submit():
-        new_bill = Bill(amount=forma.amount.data, description=forma.description.data)
+        new_bill = Bill(amount=forma.amount.data, description=forma.description.data, group_id=group_id)
         db.session.add(new_bill)
         db.session.commit()
-        data = Bill.query.all()
+        bills = Bill.query.get(group_id )
         flash(f"Bill is added", 'success')
-        return redirect(url_for('bills'))
-    return render_template('bills.html', form=forma, data=data)
-
-
-@app.route('/')
-def index():
-  return render_template('index.html')
+        return redirect(url_for("bills", group_id=group_id))
+    return render_template('bills.html', bills=bills, form=forma)
 
 
 if __name__ == '__main__':

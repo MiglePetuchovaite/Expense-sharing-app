@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, BooleanField, StringField, PasswordField, FloatField, SelectField
 from wtforms.validators import DataRequired, ValidationError, EqualTo
-from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 import app
+from app import Group
 
 class RegisterForm(FlaskForm):
     name = StringField('Full Name', [DataRequired()])
@@ -28,10 +28,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 class AddGroupForm(FlaskForm):
-    group_id = StringField('Group ID:', validators=[DataRequired()])
+    group_id = SelectField('Group ID:', coerce=int, choices=[(group.id, group.group_id) for group in Group.query.order_by('id')])
     submit = SubmitField('Add')
+
 
 class BillForm(FlaskForm):
     amount = FloatField('Amount:', [DataRequired()])
-    description = StringField('Description', [DataRequired()])
+    description = StringField('Description:', [DataRequired()])
     submit = SubmitField('Add')
